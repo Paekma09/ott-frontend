@@ -8,7 +8,7 @@
     "build": "tsc -b && vite build",
     "lint": "eslint .",
     "preview": "vite preview",
-    "api:gen": "openapi-typescript-codegen --input ./openapi.yaml --output ./src/api"
+    "api:gen": "openapi-generator-cli generate -i openapi.yaml -g typescript-axios -o ./src/api"
   },
   "dependencies": {
     "@reduxjs/toolkit": "^2.8.2",
@@ -23,6 +23,7 @@
   },
   "devDependencies": {
     "@eslint/js": "^9.25.0",
+    "@openapitools/openapi-generator-cli": "^2.20.2",
     "@types/react": "^19.1.2",
     "@types/react-dom": "^19.1.2",
     "@vitejs/plugin-react": "^4.4.1",

@@ -1,0 +1,13 @@
+.gitignore
+.npmignore
+api.ts
+base.ts
+common.ts
+configuration.ts
+docs/DefaultApi.md
+docs/UserDto.md
+docs/UserLoginRequest.md
+docs/UserSignupRequest.md
+docs/VideoDto.md
+git_push.sh
+index.ts
