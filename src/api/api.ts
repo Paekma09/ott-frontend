@@ -24,7 +24,89 @@ import type { RequestArgs } from './base';
 import { BASE_PATH, COLLECTION_FORMATS, BaseAPI, RequiredError, operationServerMap } from './base';
 
 /**
- * 
+ * 비밀번호 변경 응답 DTO
+ * @export
+ * @interface ChangePasswordResponse
+ */
+export interface ChangePasswordResponse {
+    /**
+     * 비밀번호 변경 성공 여부
+     * @type {boolean}
+     * @memberof ChangePasswordResponse
+     */
+    'success'?: boolean;
+    /**
+     * 응답 메시지
+     * @type {string}
+     * @memberof ChangePasswordResponse
+     */
+    'message'?: string;
+}
+/**
+ * 공통 API 응답 DTO
+ * @export
+ * @interface CommonResponse
+ */
+export interface CommonResponse {
+    /**
+     * 성공 여부
+     * @type {boolean}
+     * @memberof CommonResponse
+     */
+    'success'?: boolean;
+    /**
+     * 응답 메세지
+     * @type {string}
+     * @memberof CommonResponse
+     */
+    'message'?: string;
+}
+/**
+ * 로그인 성공 응답 DTO
+ * @export
+ * @interface LoginResponse
+ */
+export interface LoginResponse {
+    /**
+     * Access Token(JWT)
+     * @type {string}
+     * @memberof LoginResponse
+     */
+    'accessToken'?: string;
+    /**
+     * Refresh Token
+     * @type {string}
+     * @memberof LoginResponse
+     */
+    'refreshToken'?: string;
+    /**
+     * Refresh Token 만료 시간
+     * @type {string}
+     * @memberof LoginResponse
+     */
+    'refreshTokenExpireAt'?: string;
+    /**
+     * 
+     * @type {UserDto}
+     * @memberof LoginResponse
+     */
+    'user'?: UserDto;
+}
+/**
+ * 프로필 조회 응답 DTO
+ * @export
+ * @interface ProfileResponse
+ */
+export interface ProfileResponse {
+    /**
+     * 
+     * @type {UserDto}
+     * @memberof ProfileResponse
+     */
+    'user'?: UserDto;
+}
+/**
+ * 회원 정보 DTO
  * @export
  * @interface UserDto
  */
@@ -36,42 +118,57 @@ export interface UserDto {
      */
     'id'?: number;
     /**
-     * 회원 로그인 ID
+     * 이메일
      * @type {string}
      * @memberof UserDto
      */
-    'username'?: string;
+    'email'?: string;
     /**
      * 별명/이름
      * @type {string}
      * @memberof UserDto
      */
-    'displayName'?: string;
+    'nickname'?: string;
+    /**
+     * 프로필 이미지 URL
+     * @type {string}
+     * @memberof UserDto
+     */
+    'profileImageUrl'?: string;
     /**
      * 권한
      * @type {string}
      * @memberof UserDto
      */
-    'role'?: string;
+    'role'?: UserDtoRoleEnum;
     /**
-     * 가입일(ISO8601)
+     * 가입일
      * @type {string}
      * @memberof UserDto
      */
     'createdAt'?: string;
 }
+
+export const UserDtoRoleEnum = {
+    User: 'USER',
+    Admin: 'ADMIN',
+    Suspended: 'SUSPENDED'
+} as const;
+
+export type UserDtoRoleEnum = typeof UserDtoRoleEnum[keyof typeof UserDtoRoleEnum];
+
 /**
- * 
+ * 로그인 요청 DTO
  * @export
  * @interface UserLoginRequest
  */
 export interface UserLoginRequest {
     /**
-     * 로그인 ID
+     * 로그인 이메일
      * @type {string}
      * @memberof UserLoginRequest
      */
-    'username': string;
+    'email': string;
     /**
      * 비밀번호
      * @type {string}
@@ -80,7 +177,7 @@ export interface UserLoginRequest {
     'password': string;
 }
 /**
- * 
+ * 회원가입 요청 DTO
  * @export
  * @interface UserSignupRequest
  */
@@ -90,7 +187,7 @@ export interface UserSignupRequest {
      * @type {string}
      * @memberof UserSignupRequest
      */
-    'username': string;
+    'email': string;
     /**
      * 비밀번호(8~30자)
      * @type {string}
@@ -102,7 +199,7 @@ export interface UserSignupRequest {
      * @type {string}
      * @memberof UserSignupRequest
      */
-    'displayName': string;
+    'nickname': string;
 }
 /**
  * 
@@ -153,6 +250,25 @@ export interface VideoDto {
      */
     'createdAt'?: string;
 }
+/**
+ * 회원 탈퇴 응답 DTO
+ * @export
+ * @interface WithdrawResponse
+ */
+export interface WithdrawResponse {
+    /**
+     * 회원 탈퇴 성공 여부
+     * @type {boolean}
+     * @memberof WithdrawResponse
+     */
+    'success'?: boolean;
+    /**
+     * 응답 메시지
+     * @type {string}
+     * @memberof WithdrawResponse
+     */
+    'message'?: string;
+}
 
 /**
  * DefaultApi - axios parameter creator
@@ -161,16 +277,68 @@ export interface VideoDto {
 export const DefaultApiAxiosParamCreator = function (configuration?: Configuration) {
     return {
         /**
-         * JWT 인증 후 내 정보를 조회합니다.
-         * @summary 내 정보 조회
-         * @param {string} authorization 
+         * 기존 비밀번호 확인 후 새 비밀번호 변경
+         * @summary 비밀번호 변경
+         * @param {number} userId 사용자 ID
+         * @param {string} oldPassword 기존 비밀번호
+         * @param {string} newPassword 새 비밀번호
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        getMyInfo: async (authorization: string, options: RawAxiosRequestConfig = {}): Promise<RequestArgs> => {
-            // verify required parameter 'authorization' is not null or undefined
-            assertParamExists('getMyInfo', 'authorization', authorization)
-            const localVarPath = `/api/users/my-info`;
+        changePassword: async (userId: number, oldPassword: string, newPassword: string, options: RawAxiosRequestConfig = {}): Promise<RequestArgs> => {
+            // verify required parameter 'userId' is not null or undefined
+            assertParamExists('changePassword', 'userId', userId)
+            // verify required parameter 'oldPassword' is not null or undefined
+            assertParamExists('changePassword', 'oldPassword', oldPassword)
+            // verify required parameter 'newPassword' is not null or undefined
+            assertParamExists('changePassword', 'newPassword', newPassword)
+            const localVarPath = `/api/users/change-password`;
+            // use dummy base URL string because the URL constructor only accepts absolute URLs.
+            const localVarUrlObj = new URL(localVarPath, DUMMY_BASE_URL);
+            let baseOptions;
+            if (configuration) {
+                baseOptions = configuration.baseOptions;
+            }
+
+            const localVarRequestOptions = { method: 'POST', ...baseOptions, ...options};
+            const localVarHeaderParameter = {} as any;
+            const localVarQueryParameter = {} as any;
+
+            // authentication BearerAuth required
+            // http bearer authentication required
+            await setBearerAuthToObject(localVarHeaderParameter, configuration)
+
+            if (userId !== undefined) {
+                localVarQueryParameter['userId'] = userId;
+            }
+
+            if (oldPassword !== undefined) {
+                localVarQueryParameter['oldPassword'] = oldPassword;
+            }
+
+            if (newPassword !== undefined) {
+                localVarQueryParameter['newPassword'] = newPassword;
+            }
+
+
+    
+            setSearchParams(localVarUrlObj, localVarQueryParameter);
+            let headersFromBaseOptions = baseOptions && baseOptions.headers ? baseOptions.headers : {};
+            localVarRequestOptions.headers = {...localVarHeaderParameter, ...headersFromBaseOptions, ...options.headers};
+
+            return {
+                url: toPathString(localVarUrlObj),
+                options: localVarRequestOptions,
+            };
+        },
+        /**
+         * 현재 로그인된 사용자의 정보를 토큰 기반으로 조회
+         * @summary 토큰 기반 유저 정보 조회
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        getMyProfile: async (options: RawAxiosRequestConfig = {}): Promise<RequestArgs> => {
+            const localVarPath = `/api/users/me`;
             // use dummy base URL string because the URL constructor only accepts absolute URLs.
             const localVarUrlObj = new URL(localVarPath, DUMMY_BASE_URL);
             let baseOptions;
@@ -188,9 +356,47 @@ export const DefaultApiAxiosParamCreator = function (configuration?: Configurati
 
 
     
-            if (authorization != null) {
-                localVarHeaderParameter['Authorization'] = String(authorization);
+            setSearchParams(localVarUrlObj, localVarQueryParameter);
+            let headersFromBaseOptions = baseOptions && baseOptions.headers ? baseOptions.headers : {};
+            localVarRequestOptions.headers = {...localVarHeaderParameter, ...headersFromBaseOptions, ...options.headers};
+
+            return {
+                url: toPathString(localVarUrlObj),
+                options: localVarRequestOptions,
+            };
+        },
+        /**
+         * 사용자 ID로 프로필 정보 조회
+         * @summary 프로필 조회
+         * @param {number} userId 사용자 ID
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        getProfile: async (userId: number, options: RawAxiosRequestConfig = {}): Promise<RequestArgs> => {
+            // verify required parameter 'userId' is not null or undefined
+            assertParamExists('getProfile', 'userId', userId)
+            const localVarPath = `/api/users/profile`;
+            // use dummy base URL string because the URL constructor only accepts absolute URLs.
+            const localVarUrlObj = new URL(localVarPath, DUMMY_BASE_URL);
+            let baseOptions;
+            if (configuration) {
+                baseOptions = configuration.baseOptions;
             }
+
+            const localVarRequestOptions = { method: 'GET', ...baseOptions, ...options};
+            const localVarHeaderParameter = {} as any;
+            const localVarQueryParameter = {} as any;
+
+            // authentication BearerAuth required
+            // http bearer authentication required
+            await setBearerAuthToObject(localVarHeaderParameter, configuration)
+
+            if (userId !== undefined) {
+                localVarQueryParameter['userId'] = userId;
+            }
+
+
+    
             setSearchParams(localVarUrlObj, localVarQueryParameter);
             let headersFromBaseOptions = baseOptions && baseOptions.headers ? baseOptions.headers : {};
             localVarRequestOptions.headers = {...localVarHeaderParameter, ...headersFromBaseOptions, ...options.headers};
@@ -273,7 +479,7 @@ export const DefaultApiAxiosParamCreator = function (configuration?: Configurati
             };
         },
         /**
-         * 로그인 성공시 JWT 토큰을 반환합니다.
+         * 이메일, 비밀번호로 로그인(이메일 인증된 사용자만 가능)
          * @summary 로그인
          * @param {UserLoginRequest} userLoginRequest 
          * @param {*} [options] Override http request option.
@@ -313,8 +519,90 @@ export const DefaultApiAxiosParamCreator = function (configuration?: Configurati
             };
         },
         /**
-         * 신규 회원을 등록합니다.
-         * @summary 회원가입
+         * RefreshToken을 무효화하여 로그아웃 처리
+         * @summary 로그아웃
+         * @param {number} userId 사용자 ID
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        logout: async (userId: number, options: RawAxiosRequestConfig = {}): Promise<RequestArgs> => {
+            // verify required parameter 'userId' is not null or undefined
+            assertParamExists('logout', 'userId', userId)
+            const localVarPath = `/api/users/logout`;
+            // use dummy base URL string because the URL constructor only accepts absolute URLs.
+            const localVarUrlObj = new URL(localVarPath, DUMMY_BASE_URL);
+            let baseOptions;
+            if (configuration) {
+                baseOptions = configuration.baseOptions;
+            }
+
+            const localVarRequestOptions = { method: 'POST', ...baseOptions, ...options};
+            const localVarHeaderParameter = {} as any;
+            const localVarQueryParameter = {} as any;
+
+            // authentication BearerAuth required
+            // http bearer authentication required
+            await setBearerAuthToObject(localVarHeaderParameter, configuration)
+
+            if (userId !== undefined) {
+                localVarQueryParameter['userId'] = userId;
+            }
+
+
+    
+            setSearchParams(localVarUrlObj, localVarQueryParameter);
+            let headersFromBaseOptions = baseOptions && baseOptions.headers ? baseOptions.headers : {};
+            localVarRequestOptions.headers = {...localVarHeaderParameter, ...headersFromBaseOptions, ...options.headers};
+
+            return {
+                url: toPathString(localVarUrlObj),
+                options: localVarRequestOptions,
+            };
+        },
+        /**
+         * RefreshToken 으로 AccessToken 재발급
+         * @summary AccessToken 재발급
+         * @param {string} refreshToken RefreshToken
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        refreshToken: async (refreshToken: string, options: RawAxiosRequestConfig = {}): Promise<RequestArgs> => {
+            // verify required parameter 'refreshToken' is not null or undefined
+            assertParamExists('refreshToken', 'refreshToken', refreshToken)
+            const localVarPath = `/api/users/refresh`;
+            // use dummy base URL string because the URL constructor only accepts absolute URLs.
+            const localVarUrlObj = new URL(localVarPath, DUMMY_BASE_URL);
+            let baseOptions;
+            if (configuration) {
+                baseOptions = configuration.baseOptions;
+            }
+
+            const localVarRequestOptions = { method: 'POST', ...baseOptions, ...options};
+            const localVarHeaderParameter = {} as any;
+            const localVarQueryParameter = {} as any;
+
+            // authentication BearerAuth required
+            // http bearer authentication required
+            await setBearerAuthToObject(localVarHeaderParameter, configuration)
+
+            if (refreshToken !== undefined) {
+                localVarQueryParameter['refreshToken'] = refreshToken;
+            }
+
+
+    
+            setSearchParams(localVarUrlObj, localVarQueryParameter);
+            let headersFromBaseOptions = baseOptions && baseOptions.headers ? baseOptions.headers : {};
+            localVarRequestOptions.headers = {...localVarHeaderParameter, ...headersFromBaseOptions, ...options.headers};
+
+            return {
+                url: toPathString(localVarUrlObj),
+                options: localVarRequestOptions,
+            };
+        },
+        /**
+         * 이메일 인증을 위한 회원가입 요청
+         * @summary 회원가입 (이메일 인증)
          * @param {UserSignupRequest} userSignupRequest 
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
@@ -454,6 +742,88 @@ export const DefaultApiAxiosParamCreator = function (configuration?: Configurati
                 options: localVarRequestOptions,
             };
         },
+        /**
+         * 이메일 인증 토큰으로 회원 인증 완료
+         * @summary 이메일 인증
+         * @param {string} token 이메일 인증 토큰
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        verifyEmail: async (token: string, options: RawAxiosRequestConfig = {}): Promise<RequestArgs> => {
+            // verify required parameter 'token' is not null or undefined
+            assertParamExists('verifyEmail', 'token', token)
+            const localVarPath = `/api/users/verify`;
+            // use dummy base URL string because the URL constructor only accepts absolute URLs.
+            const localVarUrlObj = new URL(localVarPath, DUMMY_BASE_URL);
+            let baseOptions;
+            if (configuration) {
+                baseOptions = configuration.baseOptions;
+            }
+
+            const localVarRequestOptions = { method: 'GET', ...baseOptions, ...options};
+            const localVarHeaderParameter = {} as any;
+            const localVarQueryParameter = {} as any;
+
+            // authentication BearerAuth required
+            // http bearer authentication required
+            await setBearerAuthToObject(localVarHeaderParameter, configuration)
+
+            if (token !== undefined) {
+                localVarQueryParameter['token'] = token;
+            }
+
+
+    
+            setSearchParams(localVarUrlObj, localVarQueryParameter);
+            let headersFromBaseOptions = baseOptions && baseOptions.headers ? baseOptions.headers : {};
+            localVarRequestOptions.headers = {...localVarHeaderParameter, ...headersFromBaseOptions, ...options.headers};
+
+            return {
+                url: toPathString(localVarUrlObj),
+                options: localVarRequestOptions,
+            };
+        },
+        /**
+         * Role 변경으로 회원 탈퇴 처리
+         * @summary 회원 탈퇴
+         * @param {number} userId 사용자 ID
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        withdraw: async (userId: number, options: RawAxiosRequestConfig = {}): Promise<RequestArgs> => {
+            // verify required parameter 'userId' is not null or undefined
+            assertParamExists('withdraw', 'userId', userId)
+            const localVarPath = `/api/users/withdraw`;
+            // use dummy base URL string because the URL constructor only accepts absolute URLs.
+            const localVarUrlObj = new URL(localVarPath, DUMMY_BASE_URL);
+            let baseOptions;
+            if (configuration) {
+                baseOptions = configuration.baseOptions;
+            }
+
+            const localVarRequestOptions = { method: 'POST', ...baseOptions, ...options};
+            const localVarHeaderParameter = {} as any;
+            const localVarQueryParameter = {} as any;
+
+            // authentication BearerAuth required
+            // http bearer authentication required
+            await setBearerAuthToObject(localVarHeaderParameter, configuration)
+
+            if (userId !== undefined) {
+                localVarQueryParameter['userId'] = userId;
+            }
+
+
+    
+            setSearchParams(localVarUrlObj, localVarQueryParameter);
+            let headersFromBaseOptions = baseOptions && baseOptions.headers ? baseOptions.headers : {};
+            localVarRequestOptions.headers = {...localVarHeaderParameter, ...headersFromBaseOptions, ...options.headers};
+
+            return {
+                url: toPathString(localVarUrlObj),
+                options: localVarRequestOptions,
+            };
+        },
     }
 };
 
@@ -465,16 +835,43 @@ export const DefaultApiFp = function(configuration?: Configuration) {
     const localVarAxiosParamCreator = DefaultApiAxiosParamCreator(configuration)
     return {
         /**
-         * JWT 인증 후 내 정보를 조회합니다.
-         * @summary 내 정보 조회
-         * @param {string} authorization 
+         * 기존 비밀번호 확인 후 새 비밀번호 변경
+         * @summary 비밀번호 변경
+         * @param {number} userId 사용자 ID
+         * @param {string} oldPassword 기존 비밀번호
+         * @param {string} newPassword 새 비밀번호
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        async getMyInfo(authorization: string, options?: RawAxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<UserDto>> {
-            const localVarAxiosArgs = await localVarAxiosParamCreator.getMyInfo(authorization, options);
+        async changePassword(userId: number, oldPassword: string, newPassword: string, options?: RawAxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<ChangePasswordResponse>> {
+            const localVarAxiosArgs = await localVarAxiosParamCreator.changePassword(userId, oldPassword, newPassword, options);
             const localVarOperationServerIndex = configuration?.serverIndex ?? 0;
-            const localVarOperationServerBasePath = operationServerMap['DefaultApi.getMyInfo']?.[localVarOperationServerIndex]?.url;
+            const localVarOperationServerBasePath = operationServerMap['DefaultApi.changePassword']?.[localVarOperationServerIndex]?.url;
+            return (axios, basePath) => createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration)(axios, localVarOperationServerBasePath || basePath);
+        },
+        /**
+         * 현재 로그인된 사용자의 정보를 토큰 기반으로 조회
+         * @summary 토큰 기반 유저 정보 조회
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        async getMyProfile(options?: RawAxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<ProfileResponse>> {
+            const localVarAxiosArgs = await localVarAxiosParamCreator.getMyProfile(options);
+            const localVarOperationServerIndex = configuration?.serverIndex ?? 0;
+            const localVarOperationServerBasePath = operationServerMap['DefaultApi.getMyProfile']?.[localVarOperationServerIndex]?.url;
+            return (axios, basePath) => createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration)(axios, localVarOperationServerBasePath || basePath);
+        },
+        /**
+         * 사용자 ID로 프로필 정보 조회
+         * @summary 프로필 조회
+         * @param {number} userId 사용자 ID
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        async getProfile(userId: number, options?: RawAxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<ProfileResponse>> {
+            const localVarAxiosArgs = await localVarAxiosParamCreator.getProfile(userId, options);
+            const localVarOperationServerIndex = configuration?.serverIndex ?? 0;
+            const localVarOperationServerBasePath = operationServerMap['DefaultApi.getProfile']?.[localVarOperationServerIndex]?.url;
             return (axios, basePath) => createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration)(axios, localVarOperationServerBasePath || basePath);
         },
         /**
@@ -503,26 +900,52 @@ export const DefaultApiFp = function(configuration?: Configuration) {
             return (axios, basePath) => createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration)(axios, localVarOperationServerBasePath || basePath);
         },
         /**
-         * 로그인 성공시 JWT 토큰을 반환합니다.
+         * 이메일, 비밀번호로 로그인(이메일 인증된 사용자만 가능)
          * @summary 로그인
          * @param {UserLoginRequest} userLoginRequest 
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        async login(userLoginRequest: UserLoginRequest, options?: RawAxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<object>> {
+        async login(userLoginRequest: UserLoginRequest, options?: RawAxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<LoginResponse>> {
             const localVarAxiosArgs = await localVarAxiosParamCreator.login(userLoginRequest, options);
             const localVarOperationServerIndex = configuration?.serverIndex ?? 0;
             const localVarOperationServerBasePath = operationServerMap['DefaultApi.login']?.[localVarOperationServerIndex]?.url;
             return (axios, basePath) => createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration)(axios, localVarOperationServerBasePath || basePath);
         },
         /**
-         * 신규 회원을 등록합니다.
-         * @summary 회원가입
+         * RefreshToken을 무효화하여 로그아웃 처리
+         * @summary 로그아웃
+         * @param {number} userId 사용자 ID
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        async logout(userId: number, options?: RawAxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<CommonResponse>> {
+            const localVarAxiosArgs = await localVarAxiosParamCreator.logout(userId, options);
+            const localVarOperationServerIndex = configuration?.serverIndex ?? 0;
+            const localVarOperationServerBasePath = operationServerMap['DefaultApi.logout']?.[localVarOperationServerIndex]?.url;
+            return (axios, basePath) => createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration)(axios, localVarOperationServerBasePath || basePath);
+        },
+        /**
+         * RefreshToken 으로 AccessToken 재발급
+         * @summary AccessToken 재발급
+         * @param {string} refreshToken RefreshToken
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        async refreshToken(refreshToken: string, options?: RawAxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<CommonResponse>> {
+            const localVarAxiosArgs = await localVarAxiosParamCreator.refreshToken(refreshToken, options);
+            const localVarOperationServerIndex = configuration?.serverIndex ?? 0;
+            const localVarOperationServerBasePath = operationServerMap['DefaultApi.refreshToken']?.[localVarOperationServerIndex]?.url;
+            return (axios, basePath) => createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration)(axios, localVarOperationServerBasePath || basePath);
+        },
+        /**
+         * 이메일 인증을 위한 회원가입 요청
+         * @summary 회원가입 (이메일 인증)
          * @param {UserSignupRequest} userSignupRequest 
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        async signup(userSignupRequest: UserSignupRequest, options?: RawAxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<UserDto>> {
+        async signup(userSignupRequest: UserSignupRequest, options?: RawAxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<CommonResponse>> {
             const localVarAxiosArgs = await localVarAxiosParamCreator.signup(userSignupRequest, options);
             const localVarOperationServerIndex = configuration?.serverIndex ?? 0;
             const localVarOperationServerBasePath = operationServerMap['DefaultApi.signup']?.[localVarOperationServerIndex]?.url;
@@ -557,6 +980,32 @@ export const DefaultApiFp = function(configuration?: Configuration) {
             const localVarOperationServerBasePath = operationServerMap['DefaultApi.uploadVideo']?.[localVarOperationServerIndex]?.url;
             return (axios, basePath) => createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration)(axios, localVarOperationServerBasePath || basePath);
         },
+        /**
+         * 이메일 인증 토큰으로 회원 인증 완료
+         * @summary 이메일 인증
+         * @param {string} token 이메일 인증 토큰
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        async verifyEmail(token: string, options?: RawAxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<CommonResponse>> {
+            const localVarAxiosArgs = await localVarAxiosParamCreator.verifyEmail(token, options);
+            const localVarOperationServerIndex = configuration?.serverIndex ?? 0;
+            const localVarOperationServerBasePath = operationServerMap['DefaultApi.verifyEmail']?.[localVarOperationServerIndex]?.url;
+            return (axios, basePath) => createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration)(axios, localVarOperationServerBasePath || basePath);
+        },
+        /**
+         * Role 변경으로 회원 탈퇴 처리
+         * @summary 회원 탈퇴
+         * @param {number} userId 사용자 ID
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        async withdraw(userId: number, options?: RawAxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<WithdrawResponse>> {
+            const localVarAxiosArgs = await localVarAxiosParamCreator.withdraw(userId, options);
+            const localVarOperationServerIndex = configuration?.serverIndex ?? 0;
+            const localVarOperationServerBasePath = operationServerMap['DefaultApi.withdraw']?.[localVarOperationServerIndex]?.url;
+            return (axios, basePath) => createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration)(axios, localVarOperationServerBasePath || basePath);
+        },
     }
 };
 
@@ -568,14 +1017,35 @@ export const DefaultApiFactory = function (configuration?: Configuration, basePa
     const localVarFp = DefaultApiFp(configuration)
     return {
         /**
-         * JWT 인증 후 내 정보를 조회합니다.
-         * @summary 내 정보 조회
-         * @param {string} authorization 
+         * 기존 비밀번호 확인 후 새 비밀번호 변경
+         * @summary 비밀번호 변경
+         * @param {number} userId 사용자 ID
+         * @param {string} oldPassword 기존 비밀번호
+         * @param {string} newPassword 새 비밀번호
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        getMyInfo(authorization: string, options?: RawAxiosRequestConfig): AxiosPromise<UserDto> {
-            return localVarFp.getMyInfo(authorization, options).then((request) => request(axios, basePath));
+        changePassword(userId: number, oldPassword: string, newPassword: string, options?: RawAxiosRequestConfig): AxiosPromise<ChangePasswordResponse> {
+            return localVarFp.changePassword(userId, oldPassword, newPassword, options).then((request) => request(axios, basePath));
+        },
+        /**
+         * 현재 로그인된 사용자의 정보를 토큰 기반으로 조회
+         * @summary 토큰 기반 유저 정보 조회
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        getMyProfile(options?: RawAxiosRequestConfig): AxiosPromise<ProfileResponse> {
+            return localVarFp.getMyProfile(options).then((request) => request(axios, basePath));
+        },
+        /**
+         * 사용자 ID로 프로필 정보 조회
+         * @summary 프로필 조회
+         * @param {number} userId 사용자 ID
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        getProfile(userId: number, options?: RawAxiosRequestConfig): AxiosPromise<ProfileResponse> {
+            return localVarFp.getProfile(userId, options).then((request) => request(axios, basePath));
         },
         /**
          * 동영상 ID로 특정 동영상을 조회합니다.
@@ -597,23 +1067,43 @@ export const DefaultApiFactory = function (configuration?: Configuration, basePa
             return localVarFp.getVideoList(options).then((request) => request(axios, basePath));
         },
         /**
-         * 로그인 성공시 JWT 토큰을 반환합니다.
+         * 이메일, 비밀번호로 로그인(이메일 인증된 사용자만 가능)
          * @summary 로그인
          * @param {UserLoginRequest} userLoginRequest 
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        login(userLoginRequest: UserLoginRequest, options?: RawAxiosRequestConfig): AxiosPromise<object> {
+        login(userLoginRequest: UserLoginRequest, options?: RawAxiosRequestConfig): AxiosPromise<LoginResponse> {
             return localVarFp.login(userLoginRequest, options).then((request) => request(axios, basePath));
         },
         /**
-         * 신규 회원을 등록합니다.
-         * @summary 회원가입
+         * RefreshToken을 무효화하여 로그아웃 처리
+         * @summary 로그아웃
+         * @param {number} userId 사용자 ID
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        logout(userId: number, options?: RawAxiosRequestConfig): AxiosPromise<CommonResponse> {
+            return localVarFp.logout(userId, options).then((request) => request(axios, basePath));
+        },
+        /**
+         * RefreshToken 으로 AccessToken 재발급
+         * @summary AccessToken 재발급
+         * @param {string} refreshToken RefreshToken
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        refreshToken(refreshToken: string, options?: RawAxiosRequestConfig): AxiosPromise<CommonResponse> {
+            return localVarFp.refreshToken(refreshToken, options).then((request) => request(axios, basePath));
+        },
+        /**
+         * 이메일 인증을 위한 회원가입 요청
+         * @summary 회원가입 (이메일 인증)
          * @param {UserSignupRequest} userSignupRequest 
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        signup(userSignupRequest: UserSignupRequest, options?: RawAxiosRequestConfig): AxiosPromise<UserDto> {
+        signup(userSignupRequest: UserSignupRequest, options?: RawAxiosRequestConfig): AxiosPromise<CommonResponse> {
             return localVarFp.signup(userSignupRequest, options).then((request) => request(axios, basePath));
         },
         /**
@@ -639,6 +1129,26 @@ export const DefaultApiFactory = function (configuration?: Configuration, basePa
         uploadVideo(title: string, userId: string, file: File, description?: string, options?: RawAxiosRequestConfig): AxiosPromise<object> {
             return localVarFp.uploadVideo(title, userId, file, description, options).then((request) => request(axios, basePath));
         },
+        /**
+         * 이메일 인증 토큰으로 회원 인증 완료
+         * @summary 이메일 인증
+         * @param {string} token 이메일 인증 토큰
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        verifyEmail(token: string, options?: RawAxiosRequestConfig): AxiosPromise<CommonResponse> {
+            return localVarFp.verifyEmail(token, options).then((request) => request(axios, basePath));
+        },
+        /**
+         * Role 변경으로 회원 탈퇴 처리
+         * @summary 회원 탈퇴
+         * @param {number} userId 사용자 ID
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        withdraw(userId: number, options?: RawAxiosRequestConfig): AxiosPromise<WithdrawResponse> {
+            return localVarFp.withdraw(userId, options).then((request) => request(axios, basePath));
+        },
     };
 };
 
@@ -650,15 +1160,40 @@ export const DefaultApiFactory = function (configuration?: Configuration, basePa
  */
 export class DefaultApi extends BaseAPI {
     /**
-     * JWT 인증 후 내 정보를 조회합니다.
-     * @summary 내 정보 조회
-     * @param {string} authorization 
+     * 기존 비밀번호 확인 후 새 비밀번호 변경
+     * @summary 비밀번호 변경
+     * @param {number} userId 사용자 ID
+     * @param {string} oldPassword 기존 비밀번호
+     * @param {string} newPassword 새 비밀번호
      * @param {*} [options] Override http request option.
      * @throws {RequiredError}
      * @memberof DefaultApi
      */
-    public getMyInfo(authorization: string, options?: RawAxiosRequestConfig) {
-        return DefaultApiFp(this.configuration).getMyInfo(authorization, options).then((request) => request(this.axios, this.basePath));
+    public changePassword(userId: number, oldPassword: string, newPassword: string, options?: RawAxiosRequestConfig) {
+        return DefaultApiFp(this.configuration).changePassword(userId, oldPassword, newPassword, options).then((request) => request(this.axios, this.basePath));
+    }
+
+    /**
+     * 현재 로그인된 사용자의 정보를 토큰 기반으로 조회
+     * @summary 토큰 기반 유저 정보 조회
+     * @param {*} [options] Override http request option.
+     * @throws {RequiredError}
+     * @memberof DefaultApi
+     */
+    public getMyProfile(options?: RawAxiosRequestConfig) {
+        return DefaultApiFp(this.configuration).getMyProfile(options).then((request) => request(this.axios, this.basePath));
+    }
+
+    /**
+     * 사용자 ID로 프로필 정보 조회
+     * @summary 프로필 조회
+     * @param {number} userId 사용자 ID
+     * @param {*} [options] Override http request option.
+     * @throws {RequiredError}
+     * @memberof DefaultApi
+     */
+    public getProfile(userId: number, options?: RawAxiosRequestConfig) {
+        return DefaultApiFp(this.configuration).getProfile(userId, options).then((request) => request(this.axios, this.basePath));
     }
 
     /**
@@ -685,7 +1220,7 @@ export class DefaultApi extends BaseAPI {
     }
 
     /**
-     * 로그인 성공시 JWT 토큰을 반환합니다.
+     * 이메일, 비밀번호로 로그인(이메일 인증된 사용자만 가능)
      * @summary 로그인
      * @param {UserLoginRequest} userLoginRequest 
      * @param {*} [options] Override http request option.
@@ -697,8 +1232,32 @@ export class DefaultApi extends BaseAPI {
     }
 
     /**
-     * 신규 회원을 등록합니다.
-     * @summary 회원가입
+     * RefreshToken을 무효화하여 로그아웃 처리
+     * @summary 로그아웃
+     * @param {number} userId 사용자 ID
+     * @param {*} [options] Override http request option.
+     * @throws {RequiredError}
+     * @memberof DefaultApi
+     */
+    public logout(userId: number, options?: RawAxiosRequestConfig) {
+        return DefaultApiFp(this.configuration).logout(userId, options).then((request) => request(this.axios, this.basePath));
+    }
+
+    /**
+     * RefreshToken 으로 AccessToken 재발급
+     * @summary AccessToken 재발급
+     * @param {string} refreshToken RefreshToken
+     * @param {*} [options] Override http request option.
+     * @throws {RequiredError}
+     * @memberof DefaultApi
+     */
+    public refreshToken(refreshToken: string, options?: RawAxiosRequestConfig) {
+        return DefaultApiFp(this.configuration).refreshToken(refreshToken, options).then((request) => request(this.axios, this.basePath));
+    }
+
+    /**
+     * 이메일 인증을 위한 회원가입 요청
+     * @summary 회원가입 (이메일 인증)
      * @param {UserSignupRequest} userSignupRequest 
      * @param {*} [options] Override http request option.
      * @throws {RequiredError}
@@ -733,6 +1292,30 @@ export class DefaultApi extends BaseAPI {
      */
     public uploadVideo(title: string, userId: string, file: File, description?: string, options?: RawAxiosRequestConfig) {
         return DefaultApiFp(this.configuration).uploadVideo(title, userId, file, description, options).then((request) => request(this.axios, this.basePath));
+    }
+
+    /**
+     * 이메일 인증 토큰으로 회원 인증 완료
+     * @summary 이메일 인증
+     * @param {string} token 이메일 인증 토큰
+     * @param {*} [options] Override http request option.
+     * @throws {RequiredError}
+     * @memberof DefaultApi
+     */
+    public verifyEmail(token: string, options?: RawAxiosRequestConfig) {
+        return DefaultApiFp(this.configuration).verifyEmail(token, options).then((request) => request(this.axios, this.basePath));
+    }
+
+    /**
+     * Role 변경으로 회원 탈퇴 처리
+     * @summary 회원 탈퇴
+     * @param {number} userId 사용자 ID
+     * @param {*} [options] Override http request option.
+     * @throws {RequiredError}
+     * @memberof DefaultApi
+     */
+    public withdraw(userId: number, options?: RawAxiosRequestConfig) {
+        return DefaultApiFp(this.configuration).withdraw(userId, options).then((request) => request(this.axios, this.basePath));
     }
 }
 

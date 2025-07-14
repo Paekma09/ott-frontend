@@ -4,10 +4,15 @@ api.ts
 base.ts
 common.ts
 configuration.ts
+docs/ChangePasswordResponse.md
+docs/CommonResponse.md
 docs/DefaultApi.md
+docs/LoginResponse.md
+docs/ProfileResponse.md
 docs/UserDto.md
 docs/UserLoginRequest.md
 docs/UserSignupRequest.md
 docs/VideoDto.md
+docs/WithdrawResponse.md
 git_push.sh
 index.ts

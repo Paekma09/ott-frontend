@@ -1,22 +1,20 @@
-# UserLoginRequest
+# ProfileResponse
 
-로그인 요청 DTO
+프로필 조회 응답 DTO
 
 ## Properties
 
 Name | Type | Description | Notes
 ------------ | ------------- | ------------- | -------------
-**email** | **string** | 로그인 이메일 | [default to undefined]
-**password** | **string** | 비밀번호 | [default to undefined]
+**user** | [**UserDto**](UserDto.md) |  | [optional] [default to undefined]
 
 ## Example
 
 ```typescript
-import { UserLoginRequest } from './api';
+import { ProfileResponse } from './api';
 
-const instance: UserLoginRequest = {
-    email,
-    password,
+const instance: ProfileResponse = {
+    user,
 };
 ```
 

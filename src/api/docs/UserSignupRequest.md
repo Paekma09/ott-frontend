@@ -1,13 +1,14 @@
 # UserSignupRequest
 
+회원가입 요청 DTO
 
 ## Properties
 
 Name | Type | Description | Notes
 ------------ | ------------- | ------------- | -------------
-**username** | **string** | 로그인 ID | [default to undefined]
+**email** | **string** | 로그인 ID | [default to undefined]
 **password** | **string** | 비밀번호(8~30자) | [default to undefined]
-**displayName** | **string** | 별명 | [default to undefined]
+**nickname** | **string** | 별명 | [default to undefined]
 
 ## Example
 
@@ -15,9 +16,9 @@ Name | Type | Description | Notes
 import { UserSignupRequest } from './api';
 
 const instance: UserSignupRequest = {
-    username,
+    email,
     password,
-    displayName,
+    nickname,
 };
 ```
 

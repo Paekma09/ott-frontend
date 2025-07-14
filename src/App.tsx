@@ -1,18 +1,22 @@
-import React from 'react';
-import { Routes, Route, Link } from 'react-router-dom';
-import HomePage from './pages/HomePage';
-import AboutPage from './pages/AboutPage';
+import {Routes, Route, BrowserRouter, Navigate} from 'react-router-dom';
+import LoginPage from "./pages/LoginPage.tsx";
+import SignupPage from "./pages/SignupPage.tsx";
+import ProtectedRoute from "./components/Common/ProtectedRoute.tsx";
+import HomePage from "./pages/HomePage.tsx";
 
-const App: React.FC = () => (
-    <div>
-        <nav>
-            <Link to="/">홈</Link> | <Link to="/about">About</Link>
-        </nav>
-        <Routes>
-            <Route path="/" element={<HomePage />} />
-            <Route path="/about" element={<AboutPage />} />
-        </Routes>
-    </div>
-);
-
-export default App;
+export default function App() {
+    return (
+      <BrowserRouter>
+          <Routes>
+              <Route path="/login" element={<LoginPage />} />
+              <Route path="/signup" element={<SignupPage />} />
+              <Route path="/" element={
+                  <ProtectedRoute>
+                      <HomePage />
+                  </ProtectedRoute>
+              } />
+              <Route path="*" element={<Navigate to="/" />} />
+          </Routes>
+      </BrowserRouter>
+    );
+}

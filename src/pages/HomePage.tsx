@@ -1,20 +1,20 @@
-import React from 'react';
-import { useTranslation } from 'react-i18next';
-import { useAppDispatch, useAppSelector } from '../app/hook.ts';
-import { increment } from '../features/counter/counterSlice';
+import {Box, Button, Typography} from "@mui/material";
+import {useAuth} from "../hooks/useAuth.ts";
 
-const HomePage: React.FC = () => {
-    const { t } = useTranslation();
-    const count = useAppSelector((state) => state.counter.value);
-    const dispatch = useAppDispatch();
+export default function HomePage() {
+    const { user, logout } = useAuth();
 
     return (
-        <div>
-            <h1>{t('welcome')}</h1>
-            <p>Redux 카운트: {count}</p>
-            <button onClick={() => dispatch(increment())}>+1</button>
-        </div>
+        <Box sx={{ p: 4 }}>
+            <Typography variant="h4">
+                환영합니다, { user?.nickname ?? user?.email } 님.
+            </Typography>
+            <Button onClick={logout}
+                    variant="outlined"
+                    sx={{ mt: 2 }}
+            >
+                로그아웃
+            </Button>
+        </Box>
     );
-};
-
-export default HomePage;
+}

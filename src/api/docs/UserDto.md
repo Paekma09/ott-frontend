@@ -1,15 +1,17 @@
 # UserDto
 
+회원 정보 DTO
 
 ## Properties
 
 Name | Type | Description | Notes
 ------------ | ------------- | ------------- | -------------
 **id** | **number** | 회원 고유번호 | [optional] [default to undefined]
-**username** | **string** | 회원 로그인 ID | [optional] [default to undefined]
-**displayName** | **string** | 별명/이름 | [optional] [default to undefined]
+**email** | **string** | 이메일 | [optional] [default to undefined]
+**nickname** | **string** | 별명/이름 | [optional] [default to undefined]
+**profileImageUrl** | **string** | 프로필 이미지 URL | [optional] [default to undefined]
 **role** | **string** | 권한 | [optional] [default to undefined]
-**createdAt** | **string** | 가입일(ISO8601) | [optional] [default to undefined]
+**createdAt** | **string** | 가입일 | [optional] [default to undefined]
 
 ## Example
 
@@ -18,8 +20,9 @@ import { UserDto } from './api';
 
 const instance: UserDto = {
     id,
-    username,
-    displayName,
+    email,
+    nickname,
+    profileImageUrl,
     role,
     createdAt,
 };

@@ -1,22 +1,22 @@
-# UserLoginRequest
+# CommonResponse
 
-로그인 요청 DTO
+공통 API 응답 DTO
 
 ## Properties
 
 Name | Type | Description | Notes
 ------------ | ------------- | ------------- | -------------
-**email** | **string** | 로그인 이메일 | [default to undefined]
-**password** | **string** | 비밀번호 | [default to undefined]
+**success** | **boolean** | 성공 여부 | [optional] [default to undefined]
+**message** | **string** | 응답 메세지 | [optional] [default to undefined]
 
 ## Example
 
 ```typescript
-import { UserLoginRequest } from './api';
+import { CommonResponse } from './api';
 
-const instance: UserLoginRequest = {
-    email,
-    password,
+const instance: CommonResponse = {
+    success,
+    message,
 };
 ```
 

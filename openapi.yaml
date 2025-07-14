@@ -11,10 +11,10 @@ security:
 tags:
 - name: 동영상
   description: 동영상 관련 API
+- name: 회원
+  description: 회원 인증/회원/프로필 API
 - name: 동영상파일
   description: 동영상 파일 업로드/다운로드(스트리밍) API
-- name: 회원
-  description: 회원가입/로그인/JWT 인증 API
 paths:
   /api/videos/file/upload:
     post:
@@ -57,12 +57,34 @@ paths:
             '*/*':
               schema:
                 type: object
+  /api/users/withdraw:
+    post:
+      tags:
+      - 회원
+      summary: 회원 탈퇴
+      description: Role 변경으로 회원 탈퇴 처리
+      operationId: withdraw
+      parameters:
+      - name: userId
+        in: query
+        description: 사용자 ID
+        required: true
+        schema:
+          type: integer
+          format: int64
+      responses:
+        "200":
+          description: OK
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/WithdrawResponse"
   /api/users/signup:
     post:
       tags:
       - 회원
-      summary: 회원가입
-      description: 신규 회원을 등록합니다.
+      summary: 회원가입 (이메일 인증)
+      description: 이메일 인증을 위한 회원가입 요청
       operationId: signup
       requestBody:
         content:
@@ -72,17 +94,66 @@ paths:
         required: true
       responses:
         "200":
+          description: 이메일 인증 메일 발송 성공
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/CommonResponse"
+        "400":
+          description: 입력 오류/중복 이메일 등
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/CommonResponse"
+  /api/users/refresh:
+    post:
+      tags:
+      - 회원
+      summary: AccessToken 재발급
+      description: RefreshToken 으로 AccessToken 재발급
+      operationId: refreshToken
+      parameters:
+      - name: refreshToken
+        in: query
+        description: RefreshToken
+        required: true
+        schema:
+          type: string
+      responses:
+        "200":
           description: OK
           content:
             '*/*':
               schema:
-                $ref: "#/components/schemas/UserDto"
+                $ref: "#/components/schemas/CommonResponse"
+  /api/users/logout:
+    post:
+      tags:
+      - 회원
+      summary: 로그아웃
+      description: RefreshToken을 무효화하여 로그아웃 처리
+      operationId: logout
+      parameters:
+      - name: userId
+        in: query
+        description: 사용자 ID
+        required: true
+        schema:
+          type: integer
+          format: int64
+      responses:
+        "200":
+          description: OK
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/CommonResponse"
   /api/users/login:
     post:
       tags:
       - 회원
       summary: 로그인
-      description: 로그인 성공시 JWT 토큰을 반환합니다.
+      description: "이메일, 비밀번호로 로그인(이메일 인증된 사용자만 가능)"
       operationId: login
       requestBody:
         content:
@@ -92,11 +163,51 @@ paths:
         required: true
       responses:
         "200":
+          description: "로그인 성공, 토큰+유저 정보 반환"
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/LoginResponse"
+        "400":
+          description: 입력 오류/인증 미완료/비밀번호 불일치 등
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/LoginResponse"
+  /api/users/change-password:
+    post:
+      tags:
+      - 회원
+      summary: 비밀번호 변경
+      description: 기존 비밀번호 확인 후 새 비밀번호 변경
+      operationId: changePassword
+      parameters:
+      - name: userId
+        in: query
+        description: 사용자 ID
+        required: true
+        schema:
+          type: integer
+          format: int64
+      - name: oldPassword
+        in: query
+        description: 기존 비밀번호
+        required: true
+        schema:
+          type: string
+      - name: newPassword
+        in: query
+        description: 새 비밀번호
+        required: true
+        schema:
+          type: string
+      responses:
+        "200":
           description: OK
           content:
             '*/*':
               schema:
-                type: object
+                $ref: "#/components/schemas/ChangePasswordResponse"
   /api/videos:
     get:
       tags:
@@ -156,16 +267,17 @@ paths:
               schema:
                 type: string
                 format: binary
-  /api/users/my-info:
+  /api/users/verify:
     get:
       tags:
       - 회원
-      summary: 내 정보 조회
-      description: JWT 인증 후 내 정보를 조회합니다.
-      operationId: getMyInfo
+      summary: 이메일 인증
+      description: 이메일 인증 토큰으로 회원 인증 완료
+      operationId: verifyEmail
       parameters:
-      - name: Authorization
-        in: header
+      - name: token
+        in: query
+        description: 이메일 인증 토큰
         required: true
         schema:
           type: string
@@ -175,17 +287,65 @@ paths:
           content:
             '*/*':
               schema:
-                $ref: "#/components/schemas/UserDto"
+                $ref: "#/components/schemas/CommonResponse"
+  /api/users/profile:
+    get:
+      tags:
+      - 회원
+      summary: 프로필 조회
+      description: 사용자 ID로 프로필 정보 조회
+      operationId: getProfile
+      parameters:
+      - name: userId
+        in: query
+        description: 사용자 ID
+        required: true
+        schema:
+          type: integer
+          format: int64
+      responses:
+        "200":
+          description: OK
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/ProfileResponse"
+  /api/users/me:
+    get:
+      tags:
+      - 회원
+      summary: 토큰 기반 유저 정보 조회
+      description: 현재 로그인된 사용자의 정보를 토큰 기반으로 조회
+      operationId: getMyProfile
+      responses:
+        "200":
+          description: OK
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/ProfileResponse"
 components:
   schemas:
-    UserSignupRequest:
-      required:
-      - displayName
-      - password
-      - username
+    WithdrawResponse:
       type: object
       properties:
-        username:
+        success:
+          type: boolean
+          description: 회원 탈퇴 성공 여부
+          example: true
+        message:
+          type: string
+          description: 응답 메시지
+          example: 회원 탈퇴가 완료되었습니다.
+      description: 회원 탈퇴 응답 DTO
+    UserSignupRequest:
+      required:
+      - email
+      - nickname
+      - password
+      type: object
+      properties:
+        email:
           type: string
           description: 로그인 ID
           example: user123
@@ -195,10 +355,54 @@ components:
           type: string
           description: 비밀번호(8~30자)
           example: pAssword123!
-        displayName:
+        nickname:
           type: string
           description: 별명
           example: 장국영
+      description: 회원가입 요청 DTO
+    CommonResponse:
+      type: object
+      properties:
+        success:
+          type: boolean
+          description: 성공 여부
+          example: true
+        message:
+          type: string
+          description: 응답 메세지
+          example: 처리 완료되었습니다.
+      description: 공통 API 응답 DTO
+    UserLoginRequest:
+      required:
+      - email
+      - password
+      type: object
+      properties:
+        email:
+          type: string
+          description: 로그인 이메일
+          example: user123@xxx.com
+        password:
+          type: string
+          description: 비밀번호
+          example: pAssword123!
+      description: 로그인 요청 DTO
+    LoginResponse:
+      type: object
+      properties:
+        accessToken:
+          type: string
+          description: Access Token(JWT)
+        refreshToken:
+          type: string
+          description: Refresh Token
+        refreshTokenExpireAt:
+          type: string
+          description: Refresh Token 만료 시간
+          format: date-time
+        user:
+          $ref: "#/components/schemas/UserDto"
+      description: 로그인 성공 응답 DTO
     UserDto:
       type: object
       properties:
@@ -207,36 +411,43 @@ components:
           description: 회원 고유번호
           format: int64
           example: 1
-        username:
+        email:
           type: string
-          description: 회원 로그인 ID
-          example: user123
-        displayName:
+          description: 이메일
+          example: user123@xxx.com
+        nickname:
           type: string
           description: 별명/이름
           example: 장국영
+        profileImageUrl:
+          type: string
+          description: 프로필 이미지 URL
+          example: https://example.com/profile.jpg
         role:
           type: string
           description: 권한
           example: USER
+          enum:
+          - USER
+          - ADMIN
+          - SUSPENDED
         createdAt:
           type: string
-          description: 가입일(ISO8601)
-          example: 2025-06-16T10:00:00
-    UserLoginRequest:
-      required:
-      - password
-      - username
+          description: 가입일
+          format: date-time
+      description: 회원 정보 DTO
+    ChangePasswordResponse:
       type: object
       properties:
-        username:
+        success:
+          type: boolean
+          description: 비밀번호 변경 성공 여부
+          example: true
+        message:
           type: string
-          description: 로그인 ID
-          example: user123
-        password:
-          type: string
-          description: 비밀번호
-          example: pAssword123!
+          description: 응답 메시지
+          example: 비밀번호가 성공적으로 변경되었습니다.
+      description: 비밀번호 변경 응답 DTO
     VideoDto:
       required:
       - title
@@ -272,6 +483,12 @@ components:
           type: string
           description: 업로드 일시(ISO8601)
           example: 2025-06-16T10:00:00
+    ProfileResponse:
+      type: object
+      properties:
+        user:
+          $ref: "#/components/schemas/UserDto"
+      description: 프로필 조회 응답 DTO
   securitySchemes:
     BearerAuth:
       type: http
