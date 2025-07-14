@@ -6,7 +6,7 @@
 
 Name | Type | Description | Notes
 ------------ | ------------- | ------------- | -------------
-**email** | **string** | 로그인 ID | [default to undefined]
+**email** | **string** | 로그인 이메일 | [default to undefined]
 **password** | **string** | 비밀번호(8~30자) | [default to undefined]
 **nickname** | **string** | 별명 | [default to undefined]
 

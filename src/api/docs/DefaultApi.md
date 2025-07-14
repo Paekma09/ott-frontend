@@ -14,6 +14,7 @@ All URIs are relative to *http://localhost:8080*
 |[**refreshToken**](#refreshtoken) | **POST** /api/users/refresh | AccessToken 재발급|
 |[**signup**](#signup) | **POST** /api/users/signup | 회원가입 (이메일 인증)|
 |[**streamVideo**](#streamvideo) | **GET** /api/videos/file/stream/{id} | 동영상 스트리밍|
+|[**updateProfile**](#updateprofile) | **PUT** /api/users/updateProfile | 회원 정보 수정|
 |[**uploadVideo**](#uploadvideo) | **POST** /api/videos/file/upload | 동영상 파일 업로드|
 |[**verifyEmail**](#verifyemail) | **GET** /api/users/verify | 이메일 인증|
 |[**withdraw**](#withdraw) | **POST** /api/users/withdraw | 회원 탈퇴|
@@ -514,6 +515,58 @@ const { status, data } = await apiInstance.streamVideo(
 ### HTTP request headers
 
  - **Content-Type**: Not defined
+ - **Accept**: */*
+
+
+### HTTP response details
+| Status code | Description | Response headers |
+|-------------|-------------|------------------|
+|**200** | OK |  -  |
+
+[[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
+
+# **updateProfile**
+> ProfileResponse updateProfile(userUpdateRequest)
+
+사용자 ID로 회원 정보 수정 (닉네임, 프로필 이미지 등)
+
+### Example
+
+```typescript
+import {
+    DefaultApi,
+    Configuration,
+    UserUpdateRequest
+} from './api';
+
+const configuration = new Configuration();
+const apiInstance = new DefaultApi(configuration);
+
+let userUpdateRequest: UserUpdateRequest; //
+
+const { status, data } = await apiInstance.updateProfile(
+    userUpdateRequest
+);
+```
+
+### Parameters
+
+|Name | Type | Description  | Notes|
+|------------- | ------------- | ------------- | -------------|
+| **userUpdateRequest** | **UserUpdateRequest**|  | |
+
+
+### Return type
+
+**ProfileResponse**
+
+### Authorization
+
+[BearerAuth](../README.md#BearerAuth)
+
+### HTTP request headers
+
+ - **Content-Type**: application/json
  - **Accept**: */*
 
 

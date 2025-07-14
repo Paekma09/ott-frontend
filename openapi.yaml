@@ -16,6 +16,26 @@ tags:
 - name: 동영상파일
   description: 동영상 파일 업로드/다운로드(스트리밍) API
 paths:
+  /api/users/updateProfile:
+    put:
+      tags:
+      - 회원
+      summary: 회원 정보 수정
+      description: "사용자 ID로 회원 정보 수정 (닉네임, 프로필 이미지 등)"
+      operationId: updateProfile
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/UserUpdateRequest"
+        required: true
+      responses:
+        "200":
+          description: OK
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/ProfileResponse"
   /api/videos/file/upload:
     post:
       tags:
@@ -326,6 +346,59 @@ paths:
                 $ref: "#/components/schemas/ProfileResponse"
 components:
   schemas:
+    UserUpdateRequest:
+      required:
+      - nickname
+      type: object
+      properties:
+        nickname:
+          type: string
+          description: 별명/이름
+          example: 장국영
+        profileImageUrl:
+          type: string
+          description: 프로필 이미지 URL
+          example: https://example.com/profile.jpg
+      description: 회원 정보 수정 요청 DTO
+    ProfileResponse:
+      type: object
+      properties:
+        user:
+          $ref: "#/components/schemas/UserDto"
+      description: 프로필 조회 응답 DTO
+    UserDto:
+      type: object
+      properties:
+        id:
+          type: integer
+          description: 회원 고유번호
+          format: int64
+          example: 1
+        email:
+          type: string
+          description: 이메일
+          example: user123@xxx.com
+        nickname:
+          type: string
+          description: 별명/이름
+          example: 장국영
+        profileImageUrl:
+          type: string
+          description: 프로필 이미지 URL
+          example: https://example.com/profile.jpg
+        role:
+          type: string
+          description: 권한
+          example: USER
+          enum:
+          - USER
+          - ADMIN
+          - SUSPENDED
+        createdAt:
+          type: string
+          description: 가입일
+          format: date-time
+      description: 회원 정보 DTO
     WithdrawResponse:
       type: object
       properties:
@@ -347,8 +420,8 @@ components:
       properties:
         email:
           type: string
-          description: 로그인 ID
-          example: user123
+          description: 로그인 이메일
+          example: user123@xxx.com
         password:
           maxLength: 30
           minLength: 8
@@ -403,39 +476,6 @@ components:
         user:
           $ref: "#/components/schemas/UserDto"
       description: 로그인 성공 응답 DTO
-    UserDto:
-      type: object
-      properties:
-        id:
-          type: integer
-          description: 회원 고유번호
-          format: int64
-          example: 1
-        email:
-          type: string
-          description: 이메일
-          example: user123@xxx.com
-        nickname:
-          type: string
-          description: 별명/이름
-          example: 장국영
-        profileImageUrl:
-          type: string
-          description: 프로필 이미지 URL
-          example: https://example.com/profile.jpg
-        role:
-          type: string
-          description: 권한
-          example: USER
-          enum:
-          - USER
-          - ADMIN
-          - SUSPENDED
-        createdAt:
-          type: string
-          description: 가입일
-          format: date-time
-      description: 회원 정보 DTO
     ChangePasswordResponse:
       type: object
       properties:
@@ -483,12 +523,6 @@ components:
           type: string
           description: 업로드 일시(ISO8601)
           example: 2025-06-16T10:00:00
-    ProfileResponse:
-      type: object
-      properties:
-        user:
-          $ref: "#/components/schemas/UserDto"
-      description: 프로필 조회 응답 DTO
   securitySchemes:
     BearerAuth:
       type: http

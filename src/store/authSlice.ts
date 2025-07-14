@@ -7,6 +7,7 @@ interface AuthState{
     token: string | null;
     isLoading: boolean;
     error: string | null;
+    emailVerified: boolean;
 }
 
 /* 초기값 (토큰은 localStorage 에서 불러옴) */
@@ -15,6 +16,7 @@ const initialState: AuthState = {
     token: localStorage.getItem("accessToken"),
     isLoading: false,
     error: null,
+    emailVerified: false,
 };
 
 /* 인증 상태 slice (동기 reducer만) */
@@ -34,14 +36,18 @@ const authSlice = createSlice({
         setError: (state, action: PayloadAction<string | null>) => {
             state.error = action.payload;
         },
+        setEmailVerified: (state, action: PayloadAction<boolean>) => {
+            state.emailVerified = action.payload;
+        },
         resetAuth: (state) => {
             state.user = null;
             state.token = null;
             state.isLoading = false;
             state.error = null;
+            state.emailVerified = false;
         }
     },
 });
 
-export const { setUser, setToken, setLoading, setError, resetAuth } = authSlice.actions;
+export const { setUser, setToken, setLoading, setError, setEmailVerified, resetAuth } = authSlice.actions;
 export default authSlice.reducer;

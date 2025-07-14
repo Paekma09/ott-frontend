@@ -12,6 +12,7 @@ docs/ProfileResponse.md
 docs/UserDto.md
 docs/UserLoginRequest.md
 docs/UserSignupRequest.md
+docs/UserUpdateRequest.md
 docs/VideoDto.md
 docs/WithdrawResponse.md
 git_push.sh
