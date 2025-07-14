@@ -1,15 +1,18 @@
 import {Box, Button, Typography} from "@mui/material";
-import {useAuth} from "../hooks/useAuth.ts";
+import {useDispatch, useSelector} from "react-redux";
+import type {RootState} from "../store";
+import {logoutAsync} from "../services/authService.ts";
 
 export default function HomePage() {
-    const { user, logout } = useAuth();
+    const dispatch = useDispatch();
+    const user = useSelector((state: RootState) => state.auth.user);
 
     return (
         <Box sx={{ p: 4 }}>
             <Typography variant="h4">
                 환영합니다, { user?.nickname ?? user?.email } 님.
             </Typography>
-            <Button onClick={logout}
+            <Button onClick={() => dispatch<any>(logoutAsync())}
                     variant="outlined"
                     sx={{ mt: 2 }}
             >

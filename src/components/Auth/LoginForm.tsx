@@ -1,14 +1,17 @@
 import React, {useState} from "react";
 import {Alert, Box, Button, CircularProgress, TextField} from "@mui/material";
 import type {UserLoginRequest} from "../../api";
-import {useAuth} from "../../hooks/useAuth.ts";
 import {useNavigate} from "react-router-dom";
+import {useDispatch, useSelector} from "react-redux";
+import type {RootState} from "../../store";
+import {loginAsync} from "../../services/authService.ts";
 
 export default function LoginForm() {
     const [form, setForm] = useState<UserLoginRequest>({ email: "", password: "" });
-    const [error, setError] = useState("");
-    const { login, isLoading } = useAuth();
+    const dispatch = useDispatch();
     const navigate = useNavigate();
+
+    const { isLoading, error } = useSelector((state: RootState) => state.auth);
 
     const onChange = (e: React.ChangeEvent<HTMLInputElement>) => {
         setForm({ ...form, [e.target.name]: e.target.value });
@@ -16,13 +19,9 @@ export default function LoginForm() {
 
     const onSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
-        setError("");
-        try {
-            await login(form);
-            navigate("/"); // 로그인 성공 후 홈으로 리다이렉트
-        } catch (err) {
-            setError("로그인 실패. 이메일 또는 비밀번호를 확인하세요.");
-        }
+        await dispatch<any>(loginAsync(form));
+        // 로그인 성공시 user가 세팅됨 → 필요시 홈으로 이동
+        if (!error) navigate("/");
     };
 
     return (
